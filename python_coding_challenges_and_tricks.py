@@ -285,7 +285,7 @@ def LetterChanges(s):
         else:
             new.append(i)
     return ''.join(new)
-    
+
 ## list comprehension to create multidimensional array
 def SeatingStudents(a):
     l = [[i,i+1] for i in range(1,a[0]+1) if i%2!=0]
@@ -674,3 +674,24 @@ shutil.rmtree() - deletes a directory and all its contents.
 pathlib.Path.unlink() - removes a file or symbolic link.
 pathlib.Path.rmdir() - removes an empty directory.
 
+##using idx max to return max value per row -- returning column name(axis=1)
+df.idxmax(axis = 1).head()
+0       hi
+1       hi
+2    rando
+3       hi
+4       hi
+## (axis=0) will return first index of largest value per row
+max_id = df['hi'].idxmax(axis=0)
+1 #index 1
+
+## better way to view your data by transposing
+df.T.head(20)
+
+##unzip a list of tuples and assign to 2 variables
+featureNames, featureScores = zip(*list(feature_sort))
+plt.barh(range(len(featureScores)), featureScores, tick_label=featureNames)
+
+##how to set a random seed
+np.random.seed(10)
+l = np.random.choice(range(1,6), size=20)

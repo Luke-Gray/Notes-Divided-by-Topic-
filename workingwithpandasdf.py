@@ -337,7 +337,11 @@ def add_lag_feature(weather_df, window=3):
         weather_df[f'{col}_max_lag{window}'] = lag_max[col]
         weather_df[f'{col}_min_lag{window}'] = lag_min[col]
         weather_df[f'{col}_std_lag{window}'] = lag_std[col]
-
+#Pandas dataframe.rolling() function provides the feature of rolling window calculations. The concept
+#of rolling window calculation is most primarily used in signal processing and time series data. In a 
+#very simple words we take a window size of k at a time and perform some desired mathematical operation
+#on it. A window of size k means k consecutive values at a time. In a very simple case all the ‘k’ values
+#are equally weighted.
 
 ### Using interpolate to fill nan values - various methods to do it
 >>> s = pd.Series([np.nan, "single_one", np.nan,
@@ -513,3 +517,13 @@ n = len(sample_submission.apply(lambda x: x.installation_id in test.installation
 ##group_by df without having to agg()
 grouped = train.groupby('installation_id',as_index=False).last()
 
+#group by immediately to_frame()
+generation = (global_power_plants.groupby(['primary_fuel'])['estimated_generation_gwh'].sum()).to_frame()
+
+##unique way to use list comprehension for Series
+years = [2013, 2014, 2015, 2016, 2017]
+print([(gpp_df[f'generation_gwh_{x}'].nunique()) for x in years])
+
+ df['dog2_sum'] = df1.apply(lambda row: (row['A']+row['B']+row['C']) if df['dog'] == 'dog2'))
+
+##.fillna(method = 'bfill') --  fills Nan with item after missing value. 'ffill' fills with Nan with previous val
