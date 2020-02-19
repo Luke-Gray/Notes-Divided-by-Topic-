@@ -244,3 +244,7 @@ def standard_deviation(a):
         diff.append(abs(i-mean)**2)
     return sqrt(sum(diff)/len(diff))
 
+#REASONS FOR NORMALIZATION
+#1) minimize duplicate data
+#2) to minimize or avoid data modification issues,
+#3) to simplify queries.
