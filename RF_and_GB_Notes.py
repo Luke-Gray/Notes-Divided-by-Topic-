@@ -459,8 +459,13 @@ print(tree)
 
 
 ##DIFFERENCE BETWEEN BOOSTING AND PARALLEL ENSEMBLING(RANDOM FOREST, BAGGING)
+
 #---Parallel ensembling is like a committee of weak learners
 #---Boosting is like relay track race
+
+#Random forest is a horizontal ensemble technique where all member trees collectively work on the SAME task.
+#Boosting is a vertical ensemble technique where the original task is split into many individual subtasks 
+#and the individual trees work on the separated subtasks (divide and conquer!)
 
 
 ###GRADIENT BOOSTING NOTES
@@ -471,6 +476,13 @@ print(tree)
 #Gradient boosting, and its special case xgboost, can be formulated for both regression tasks and
 #classification tasks
 
+#The key insight of gradient boosting regressor is to use the k+1th tree to fit the kth residual rather 
+#than fit the original target y (like a random forest would do)
+
+#Because different trees fitting on different residuals (compared to random forest regressor where all trees
+#fit on the same target y), they tend to be less correlated
+
+
 #It differs from the parallel ensembling in that it produces a strong learner in a sequential way: Iteratively, 
 #the kth weak learner makes use of the #previous k-1 weak learners’ outcome to make its own educated guess
 
@@ -478,6 +490,14 @@ print(tree)
 #loss function
 #For classification problem, sklearn’s gradient boosting classifier uses the log loss/cross entropy loss as 
 #its default loss function
+    #Cross-entropy loss reduces to log loss when the number of classes drop to 2
+
+#Gradient boosting machines implement bagging and random feature selections similar to what is done 
+#in a random forest
+#If this facility is turned-on, it is parallel to stochastic gradient descent algorithm applied to 
+#the ‘space of functions’
+
+
 
 #PARAMETERS
 #N_ESTIMATORS is the maximum number of estimators at which boosting is terminated. If a perfect fit is 
@@ -494,6 +514,67 @@ print(tree)
 #is built. For AdaBoost the default value is None, which equates to a Decision Tree Classifier with max depth 
 #of 1 (a stump). For Gradient Boosting the default value is deviance, which equates to Logistic Regression. 
 #If “exponential” is passed, the AdaBoost algorithm is used.
+
+#MAX_DEPTH controls the height of the individual trees
+#Increasing the max_depth increases the complexity of the trees.
+#Unlike multiple linear regression where  𝑅2  is guaranteed to be positive, the large tree limit of the gbm
+#regressor produces negative  𝑅2 !
+
+##SKLEARN FACTORS IN GBM
+#staged_predict outputs a python generator and the generator outputs the prediction iteratively using next()
+#Running for loops to extract the staged_predictions and record the accuracies at range(100, 10100, 100)
+
+#SUBSAMPLING is the gbm's analogue of tree-bagging where each tree estimates only a random subset of the 
+#full samples
+#The subsample controls the percentage of samples used to fit each tree
+#From the above analysis it is clear that by dropping subsample=1 to subsample=0.9 improves the performance, 
+#especially beyond  3000  trees
+#On the other hand, the subsample=0.1 reduces the accuracies significantly
+#Similar to the idea of random forest, adding subsampling to the gbm model improves its performance. 
+#But overusing it could have back-fired, reducing the performance
+
+# dropping learning_rate has a negative effect on  𝑅2  curves. Overall the performance is reduced, and 
+#it takes more iterations to achieve the same  𝑅2  scores
+
+from sklearn.ensemble import GradientBoostingRegressor, GradientBoostingClassifier
+
+gbm.fit(wageFeatures, wage['jobclass'])
+print('The accuracy is %.3f' %(gbm.score(wageFeatures, wage.jobclass)))
+sorted(zip(wageFeatures.columns, gbm.feature_importances_), key=lambda t:t[1], reverse=True)
+
+from sklearn.metrics import r2_score 
+from sklearn.metrics import accuracy_score
+
+n_estimators = 10100
+gbm.set_params(n_estimators=n_estimators)
+steps = list(range(100,10100,100))
+
+gbm.set_params(learning_rate = 1)
+gbm.fit(wageFeatures,wage.jobclass)
+gen = gbm.staged_predict(wageFeatures)#we study how does tuning the n_estimators hyperparameters affect the accuracy,
+#making use of the staged_predict method of the gbm object
+scores_rate1 = []
+for n in range(n_estimators):
+                predicted_labels = next(gen)
+                if n not in steps: continue
+                scores_rate1.append(accuracy_score(wage.jobclass, predicted_labels))     
+
+#OR
+
+from sklearn.metrics import r2_score 
+n_estimators = 50100
+steps = range(100, 50100, 1000)
+
+gbmr.set_params(learning_rate = 1, n_estimators=n_estimators, max_depth=3)
+gbmr.fit(wageFeatures2, wage.logwage)
+gen = gbmr.staged_predict(wageFeatures2)
+r2_rate1 = []
+for n in range(n_estimators):
+    predicted_targets = next(gen)
+    if n not in steps: continue
+    r2_rate1.append(r2_score(wage.logwage, predicted_targets)) 
+
+plt.plot(steps, r2_rate1,  label=r'R^2 curve for learning_rate = 1')
 
 
 ##SUPPORT VECTOR MACHINES (SVMs)
@@ -517,3 +598,60 @@ print(tree)
 #hyperplane in a higher dimension (see Kernel Trick). RBF, or the radial basis function kernel, uses the 
 #distance between the input and some fixed point (either the origin or some of fixed point c) to make a 
 #classification assumption. More information on the Radial Basis Function can be found here.
+
+
+
+#DISCRIMINANT ANALYSIS  
+#Discriminant analysis is a statistical analysis technique which classifies based on hypothesizing the per 
+#class conditional probability distribution to be normal and pinning down these parameters by data fitting.
+
+#To emphasize the effect of the density within each class, we intentionally created two classes with the 
+#same size. When the sizes are different, missing the prior probability would cause a big trouble,
+#especially when the class labels are unbalanced.
+
+#Now that we can estimate the probability of belonging to each class, we can then assign the observation to 
+#the class with the highest probability.
+
+#This rule works when the different classes are more or less ‘balanced’.
+
+#MULTIPLE NAIVE BAYES
+# While in the previous Multinomial Naive Bayes model, 
+# the accuracies in the training set and test set are: 0.81086957 and 0.79878314, 
+# after discarding a few features, it performs better. 
+# This indicates that more features may not be better. 
+# Although logisitic regression and LDA still perform better than MNB overall,
+# MNB is powerful becuase its computation complexity is low.
+
+#QUESTIONS RE DISCRIMINANT ANALYSIS AND NAIVE BAYES
+#################### 1
+# Why is joint probability P(X, Y) equivalent to P(X)*P(Y) when events X and Y are independent?
+#ANSWER: # Say P(X) is one-fourth. If X is independent of Y, then, with enough observations, 
+# we expect 1/4 of the observations that are NOT Y to be X, and we expect 1/4 of the observations 
+#that ARE Y to also be X
+# So if P(Y) is 50% and X is 1/4 of those observations because they are independent, then overall, 
+# P(X & Y) = 1/8 of the total observations because 1/4 of 1/2 = 1/8
+# If they are independent, the conditional probability P(X | Y) = 1/4 = P(X) 
+# because 1/4 of the observations with Y also have X as stated before 
+# In other wrods, if they are independent, occurence of Y has no impact on occurence of X
+
+# 2) What is discriminant analysis?
+#################### 2
+# Discriminant analysis is a statistical analysis technique which classifies
+# based on hypothesizing the per class conditional probability distribution to
+# be normal and pinning down these parameters by data fitting.
+# We look at a density plot of each graph and use them to choose the most likely class of a new observation
+# but doing this directly can be harmful, particularly if unbalanced classes 
+# (i.e. one distribution is spread out wider while the other is higher)
+# so we need prior probabilties to help us
+
+# 3) What makes a Naive Bayes classifier "naive"?
+#################### 3
+# The classifier is naive because it makes the strong/unrealistic assumption that all predictors are independent to each other 
+# and all the features independenty contribute to the overall probability that an observation belongs to a certain class
+# Becuaase it is naive, NB is often a good classifier but a bad probability estimator.
+
+# 4) When would you use Bernoulli NB vs. Multinomial NB?
+##################### 4
+# In the spam or non-spam problem, Bernoulli NB would be used if the features only indicated whether or not the word exists
+# (i.e. the word 'Viagra' could appear 3 times in an email but the feature = '1')
+# Multinomial NB, on the other hand, would be used if word counts or frequencies were available in the data. 

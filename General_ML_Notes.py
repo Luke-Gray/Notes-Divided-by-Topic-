@@ -453,6 +453,8 @@ grid_search_forest = ms.GridSearchCV(randomForest, grid_para_forest, scoring='ac
 #6)best parameters and score and errors from these parameters
 grid_search_forest.best_perameters_
 grid_search_forest.best_score_
+	##to grab coef after fitting 
+		lm.coef_
 
 print("The training error is: %.5f" % (1 - grid_search_forest.best_estimator_.score(X_train, y_train)))
 print("The test error is: %.5f" % (1 - grid_search_forest.best_estimator_.score(X_test, y_test)))
