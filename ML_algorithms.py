@@ -803,4 +803,35 @@ feature_importance = np.array(feature_importance, dtype = dtype)
 feature_sort = np.sort(feature_importance, order='importance')[::-1]
 feature_sort
 
-##unzip
+##returning a confusion matrix after fitting a model
+from sklearn.metrics import classification_report,confusion_matrix
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+model = RandomForestClassifier(random_state= 101).fit(X_Train,Y_Train)
+predictionforest = model.predict(X_Test)
+print(confusion_matrix(Y_Test,predictionforest))
+print(classification_report(Y_Test,predictionforest))
+acc1 = accuracy_score(Y_Test,predictionforest)
+
+##NOTES ON RANDOM FOREST
+# On the other hand, Random Forest uses fully grown decision trees (low bias, high variance). It tackles 
+#the error reduction task in the opposite way: by reducing variance. The trees are made uncorrelated to 
+#maximize the decrease in variance, but the algorithm cannot reduce bias (which is slightly higher than the
+#bias of an individual tree in the forest). Hence the need for large, unpruned trees, so that the bias is 
+#initially as low as possible.
+
+#One straight-forward way is to limit the maximum allowable tree depth. The common way for tree based
+#algorithms to overfit is when they get too deep. Thus you can use the maximum depth parameter as the
+#regularization parameter — making it smaller will reduce the overfitting and introduce bias, increasing
+#it will do the opposite.
+
+
+#GAMMA (BOOSTING - which is based on weak learners)
+# controls regularization (prevents overfitting) - the higher the value, the higher the organization
+# regularization penalizes coefficients (XGB default is zero)
+
+#Tune trick: Start with 0 and check CV error rate. If you see train error >>> test error, bring gamma
+#into action. Higher the gamma, lower the difference in train and test CV. If you have no clue what value 
+#to use, use gamma=5 and see the performance. Remember that gamma brings improvement when you want to use 
+#shallow (low max_depth) trees.

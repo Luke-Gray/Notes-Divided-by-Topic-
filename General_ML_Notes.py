@@ -466,3 +466,26 @@ sorted_feat = np.sort(features, order='importance')
 #8)plot feature importance on hbar
 feat_names, feat_imps = zip(*list(sorted_feat))
 plt.barh(range(len(feat_imps)), feat_imps, tick_label = feat_names)
+
+#using multiple models at once
+from sklearn import linear_model, discriminant_analysis, naive_bayes
+
+logit = linear_model.LogisticRegression()
+LDA  = discriminant_analysis.LinearDiscriminantAnalysis()
+QDA  = discriminant_analysis.QuadraticDiscriminantAnalysis()
+GNB  = naive_bayes.GaussianNB()
+MNB  = naive_bayes.MultinomialNB()
+BNB  = naive_bayes.BernoulliNB(binarize=1.5)
+
+modelList = [logit, LDA, QDA, GNB, MNB, BNB]
+modelSeries = pd.Series(modelList, index=['Logitistic', 'LDA', 'QDA', 'GNB', 'MNB', 'BNB'])
+# fit all the models to the training data
+modelSeries.apply(lambda t:t.fit(x_train, y_train))
+
+ans = modelSeries.apply(lambda t:pd.Series([t.score(x_train, y_train), t.score(x_test, y_test)]))
+ans.columns = ['train score', 'test score']
+ans
+
+##grabbing intercept and slope of linear model
+print('intercept %.2f' %(lm.intercept_))
+print('slope %.2f' %(lm.coef_))
